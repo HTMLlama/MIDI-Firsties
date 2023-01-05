@@ -1,18 +1,25 @@
 #include <Arduino.h>
 #include <USB-MIDI.h>
 
-#define BTN0 6
-#define BTN1 7
-#define BTN2 8
-#define BTN3 9
-#define BTN4 10
-#define BTN5 11
-#define BTN6 12
-#define BTN7 13
+#define BTN0 4
+#define BTN1 5
+#define BTN2 6
+#define BTN3 7
+#define BTN4 8
+#define BTN5 9
+#define BTN6 10
+#define BTN7 11
+#define SWITCH0 12
+#define SWITCH1 13
+#define POT0 A0
+#define POT1 A1
+#define POT2 A2
 
 USBMIDI_CREATE_DEFAULT_INSTANCE();
 
 int noteKnob = 0;
+int velocityKnob = 0;
+int velocity = 127;
 int baseNote = 21;
 int note0 = 36;
 int note1 = 38;
@@ -42,26 +49,39 @@ void setup() {
   pinMode(BTN5, INPUT_PULLUP);
   pinMode(BTN6, INPUT_PULLUP);
   pinMode(BTN7, INPUT_PULLUP);
+  pinMode(SWITCH0, INPUT_PULLUP);
+  pinMode(SWITCH1, INPUT_PULLUP);
   MIDI.begin(4);
 
-  // Serial.begin(16000);
+  noteKnob = analogRead(POT2);
+
+  // Serial.begin(9600);
 }
 
 void checkBtn(int btn, int note, int &lastState) {
   if (digitalRead(btn) == LOW) {
     if(lastState == HIGH) {
-      MIDI.sendNoteOn(note, 127, 1); 
-      lastState = LOW;
+      if (digitalRead(SWITCH1) == HIGH) {
+        MIDI.sendNoteOn(note, velocity, 1); 
+        lastState = LOW;
+        // Serial.println(velocityKnob);
+      }
     }
   } else {
-    MIDI.sendNoteOff(note, 0, 1); 
+    MIDI.sendNoteOff(note, 0, 1);
     lastState = HIGH;
   }
 }
 
 void loop() {
-  noteKnob = analogRead(A0);
-  baseNote = map(noteKnob, 0, 1023, 21, 32);
+
+  if(digitalRead(SWITCH1) == LOW) {
+    noteKnob = analogRead(POT2);
+  }
+  
+  velocityKnob = analogRead(POT1);
+  baseNote = map(noteKnob, 1023, 0, 21, 32);
+  velocity = map(velocityKnob, 1023, 0, 1, 127);
   note0 = baseNote;
   note1 = baseNote + 11;
   note2 = baseNote + 22;
@@ -71,12 +91,23 @@ void loop() {
   note6 = baseNote + 66;
   note7 = baseNote + 77;
 
-  checkBtn(BTN0, note0, btn0LastState);
-  checkBtn(BTN1, note1, btn1LastState);
-  checkBtn(BTN2, note2, btn2LastState);
-  checkBtn(BTN3, note3, btn3LastState);
-  checkBtn(BTN4, note4, btn4LastState);
-  checkBtn(BTN5, note5, btn5LastState);
-  checkBtn(BTN6, note6, btn6LastState);
-  checkBtn(BTN7, note7, btn7LastState);
+  if(digitalRead(SWITCH0) == LOW) {
+    checkBtn(BTN0, note0, btn0LastState);
+    checkBtn(BTN1, note1, btn1LastState);
+    checkBtn(BTN2, note2, btn2LastState);
+    checkBtn(BTN3, note3, btn3LastState);
+    checkBtn(BTN4, note4, btn4LastState);
+    checkBtn(BTN5, note5, btn5LastState);
+    checkBtn(BTN6, note6, btn6LastState);
+    checkBtn(BTN7, note7, btn7LastState);
+  } else {
+    checkBtn(BTN0, 36, btn0LastState);
+    checkBtn(BTN1, 38, btn1LastState);
+    checkBtn(BTN2, 48, btn2LastState);
+    checkBtn(BTN3, 41, btn3LastState);
+    checkBtn(BTN4, 45, btn4LastState);
+    checkBtn(BTN5, 42, btn5LastState);
+    checkBtn(BTN6, 46, btn6LastState);
+    checkBtn(BTN7, 55, btn7LastState);
+  }
 }
