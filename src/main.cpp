@@ -30,6 +30,9 @@ int note5 = 42;
 int note6 = 36;
 int note7 = 36;
 
+int scaleKnob = 0;
+int scale = 0;
+
 int btn0LastState = HIGH;
 int btn1LastState = HIGH;
 int btn2LastState = HIGH;
@@ -38,6 +41,46 @@ int btn4LastState = HIGH;
 int btn5LastState = HIGH;
 int btn6LastState = HIGH;
 int btn7LastState = HIGH;
+
+void setNotes() {
+  if (scale == 0) {
+    note0 = baseNote;
+    note1 = baseNote + 2;
+    note2 = baseNote + 4;
+    note3 = baseNote + 5;
+    note4 = baseNote + 7;
+    note5 = baseNote + 8;
+    note6 = baseNote + 11;
+    note7 = baseNote + 13;
+  } else if (scale == 1) {
+    note0 = baseNote;
+    note1 = baseNote + 2;
+    note2 = baseNote + 3;
+    note3 = baseNote + 5;
+    note4 = baseNote + 7;
+    note5 = baseNote + 8;
+    note6 = baseNote + 11;
+    note7 = baseNote + 13;
+  } else if (scale == 2) {
+    note0 = baseNote;
+    note1 = baseNote + 2;
+    note2 = baseNote + 3;
+    note3 = baseNote + 5;
+    note4 = baseNote + 7;
+    note5 = baseNote + 9;
+    note6 = baseNote + 10;
+    note7 = baseNote + 13;
+  } else if (scale == 3) {
+    note0 = baseNote;
+    note1 = baseNote + 1;
+    note2 = baseNote + 3;
+    note3 = baseNote + 5;
+    note4 = baseNote + 6;
+    note5 = baseNote + 8;
+    note6 = baseNote + 10;
+    note7 = baseNote + 12;
+  }
+}
 
 void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
@@ -54,6 +97,12 @@ void setup() {
   MIDI.begin(4);
 
   noteKnob = analogRead(POT2);
+  baseNote = map(noteKnob, 1023, 0, 0, 116);
+
+  scaleKnob = analogRead(POT2);
+  scale = map(noteKnob, 1023, 0, 0, 3);
+
+  setNotes();
 
   // Serial.begin(9600);
 }
@@ -77,20 +126,14 @@ void loop() {
 
   if(digitalRead(SWITCH1) == LOW) {
     noteKnob = analogRead(POT2);
+
+    baseNote = map(noteKnob, 1023, 0, 0, 116);
+    setNotes();
   }
   
   velocityKnob = analogRead(POT1);
-  baseNote = map(noteKnob, 1023, 0, 21, 32);
   velocity = map(velocityKnob, 1023, 0, 1, 127);
-  note0 = baseNote;
-  note1 = baseNote + 11;
-  note2 = baseNote + 22;
-  note3 = baseNote + 33;
-  note4 = baseNote + 44;
-  note5 = baseNote + 55;
-  note6 = baseNote + 66;
-  note7 = baseNote + 77;
-
+  
   if(digitalRead(SWITCH0) == LOW) {
     checkBtn(BTN0, note0, btn0LastState);
     checkBtn(BTN1, note1, btn1LastState);
